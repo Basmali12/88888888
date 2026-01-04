@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إضافة منتجات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input, textarea, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+        
+        /* ميزة الكتابة التلقائية: المربع يكبر والكلام ينزل سطر جديد */
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            white-space: pre-wrap; 
+            overflow-wrap: break-word;
+        }
+
+        button { background: #ff9900; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #e68a00; }
+        .status { text-align: center; margin-top: 10px; font-weight: bold; }
+        .loading { display: none; color: #555; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>إضافة منتج جديد</h2>
+        
+        <input type="text" id="p-name" placeholder="اسم المنتج">
+        <input type="number" id="p-price" placeholder="السعر (أرقام فقط)">
+        
+        <textarea id="p-desc" placeholder="اكتب وصف المنتج هنا... إذا كان النص طويلاً سينزل للسطر التالي تلقائياً"></textarea>
+        
+        <select id="p-cat">
+            <option value="watch">ساعات</option>
+            <option value="shoes">أحذية</option>
+            <option value="perfume">عطور</option>
+            <option value="clothes">ملابس</option>
+            <option value="other">أخرى</option>
+        </select>
+
+        <label>صورة المنتج:</label>
+        <input type="file" id="p-img">
+
+        <button onclick="uploadAndSave()">حفظ ونشر المنتج</button>
+        <div class="loading" id="loading-msg">جاري رفع الصورة... يرجى الانتظار ⏳</div>
+        <div class="status" id="status-msg"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 1. إعدادات Firebase الخاصة بك (تم نسخها من رسالتك)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX0esBRiQ4MuyvWH_s2UZ2kJpA9GryDgE",
+            authDomain: "tttttt-48c2e.firebaseapp.com",
+            databaseURL: "https://tttttt-48c2e-default-rtdb.firebaseio.com",
+            projectId: "tttttt-48c2e",
+            storageBucket: "tttttt-48c2e.firebasestorage.app",
+            messagingSenderId: "982883301644",
+            appId: "1:982883301644:web:7b1676215cb4f0fe7c7129",
+            measurementId: "G-QLCYC16T20"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. إعدادات Cloudinary (تم وضع بياناتك الصحيحة)
+        const cloudName = "dongmlmoj"; 
+        const uploadPreset = "app_upload"; // الاسم الذي اخترته في الصورة
+
+        async function uploadAndSave() {
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const desc = document.getElementById('p-desc').value;
+            const cat = document.getElementById('p-cat').value;
+            const fileInput = document.getElementById('p-img');
+            const status = document.getElementById('status-msg');
+            const loading = document.getElementById('loading-msg');
+
+            if(!name || !price || fileInput.files.length === 0) {
+                status.innerText = "❌ يرجى ملء جميع الحقول واختيار صورة!";
+                status.style.color = "red";
+                return;
+            }
+
+            loading.style.display = "block";
+            status.innerText = "";
+
+            // رفع الصورة
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset); 
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if(data.error) throw new Error(data.error.message);
+                
+                const imageUrl = data.secure_url;
+
+                // الحفظ في قاعدة البيانات
+                await db.ref('products').push({
+                    title: name,
+                    price: Number(price),
+                    description: desc,
+                    category: cat,
+                    image: imageUrl,
+                    date: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                status.innerText = "✅ تم نشر المنتج بنجاح!";
+                status.style.color = "green";
+                
+                // تفريغ الحقول
+                document.getElementById('p-name').value = "";
+                document.getElementById('p-price').value = "";
+                document.getElementById('p-desc').value = "";
+                document.getElementById('p-img').value = "";
+
+            } catch (err) {
+                console.error(err);
+                status.innerText = "خطأ: " + err.message;
+                status.style.color = "red";
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
