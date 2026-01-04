@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -16,8 +17,8 @@
         <div style="display:flex; gap:10px; align-items:center;">
             <i class="fa-brands fa-android"></i> <span>تثبيت التطبيق</span>
         </div>
-        <button id="install-btn" style="background:#ff9900; border:none; color:#fff; padding:5px 15px; border-radius:20px;">تثبيت</button>
-        <button id="close-install" style="background:none; border:none; color:#ccc;"><i class="fa-solid fa-xmark"></i></button>
+        <button id="install-btn">تثبيت</button>
+        <button id="close-install"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
     <div id="splash-screen">
@@ -31,12 +32,12 @@
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header" style="display:flex; justify-content:space-between; margin-bottom:20px;">
+        <div class="sidebar-header">
             <h3>القائمة</h3>
-            <button id="close-sidebar" style="background:none; border:none; font-size:18px;"><i class="fa-solid fa-xmark"></i></button>
+            <button id="close-sidebar"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <ul class="sidebar-links" style="list-style:none;">
-            <li style="margin-bottom:15px;"><a href="#" onclick="showPage('profile-page'); toggleSidebar()" style="text-decoration:none; color:#333;"><i class="fa-solid fa-user"></i> حسابي</a></li>
+        <ul class="sidebar-links">
+            <li><a href="#" onclick="showPage('profile-page'); toggleSidebar()"><i class="fa-solid fa-user"></i> حسابي</a></li>
         </ul>
     </div>
 
@@ -67,14 +68,14 @@
                 <div class="promo-text">عروض مميزة</div>
             </div>
 
-            <h3 class="section-title" style="padding:10px 15px;">تصفح الفئات</h3>
+            <h3 class="section-title">تصفح الفئات</h3>
             <div class="categories-scroll" id="dynamic-categories">
                 <div class="category-item" onclick="filterProducts('all')"><div class="cat-box active"><div class="square-icon"></div></div><span class="cat-name">الكل</span></div>
             </div>
 
-            <div class="section-title" style="padding:10px 15px;"><span>أحدث المنتجات</span></div>
+            <div class="section-title"><span>أحدث المنتجات</span></div>
             <div class="products-grid" id="products-container">
-                <div style="text-align:center; width:200%; padding:20px; color:#777;">جاري تحميل المنتجات...</div>
+                <div style="text-align:center; width:200%; padding:20px; color:#777;">جاري التحميل...</div>
             </div>
         </div>
 
@@ -122,9 +123,9 @@
             <span class="header-title">معلومات التوصيل</span>
         </div>
         <div style="padding:20px;">
-            <input id="order-name" type="text" placeholder="الاسم الكامل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
-            <input id="order-phone" type="tel" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
-            <textarea id="order-address" placeholder="العنوان بالتفصيل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;"></textarea>
+            <input id="order-name" type="text" placeholder="الاسم الكامل" class="checkout-input">
+            <input id="order-phone" type="tel" placeholder="رقم الهاتف" class="checkout-input">
+            <textarea id="order-address" placeholder="العنوان بالتفصيل" class="checkout-input"></textarea>
             <button class="checkout-btn" onclick="processCheckout()">تأكيد الطلب</button>
         </div>
     </div>
@@ -148,10 +149,10 @@
     </div>
 
     <div id="login-page" class="page">
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;">
-            <h1 style="color:#ff9900;">Fyntra</h1>
-            <button onclick="handleGoogleLogin()" style="margin-top:20px; padding:10px 20px;">تسجيل الدخول</button>
-            <button onclick="showPage('home-page')" style="background:none; border:none; margin-top:10px; color:#999;">تخطي</button>
+        <div class="login-container">
+            <h1 style="color:#ff9900;">مرحباً بك</h1>
+            <button onclick="handleGoogleLogin()" class="google-btn">تسجيل الدخول عبر Google</button>
+            <button onclick="showPage('home-page')" class="skip-btn">تخطي</button>
         </div>
     </div>
 
@@ -160,4 +161,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
