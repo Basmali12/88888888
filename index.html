@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fyntra Store</title>
+    <title>متجرنا</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff9900">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -24,7 +22,7 @@
 
     <div id="splash-screen">
         <div class="splash-content">
-            <h1><span style="color:#fff">F</span>YNTRA</h1>
+            <h1 id="splash-title"><span style="color:#fff">F</span>YNTRA</h1>
             <div class="loader"></div>
         </div>
     </div>
@@ -37,16 +35,8 @@
             <h3>القائمة</h3>
             <button id="close-sidebar" style="background:none; border:none; font-size:18px;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="user-profile-summary" id="sidebar-user-info" style="display:none; padding:10px; background:#f4f4f4; border-radius:10px; margin-bottom:20px;">
-            <img src="https://via.placeholder.com/50" class="user-avatar" style="width:40px; height:40px; border-radius:50%; margin-left:10px;">
-            <div>
-                <span class="user-name" id="sidebar-username" style="display:block; font-weight:bold;">المستخدم</span>
-                <span class="user-email" id="sidebar-email" style="font-size:12px; color:#666;">email@gmail.com</span>
-            </div>
-        </div>
         <ul class="sidebar-links" style="list-style:none;">
             <li style="margin-bottom:15px;"><a href="#" onclick="showPage('profile-page'); toggleSidebar()" style="text-decoration:none; color:#333;"><i class="fa-solid fa-user"></i> حسابي</a></li>
-            <li style="margin-bottom:15px;"><a href="#" id="dark-mode-toggle" style="text-decoration:none; color:#333;"><i class="fa-solid fa-moon"></i> الوضع الليلي</a></li>
         </ul>
     </div>
 
@@ -60,7 +50,7 @@
                         <span id="cart-count">0</span>
                     </div>
                 </div>
-                <div class="logo animated-store-name"><span class="store-text">F</span>YNTRA</div>
+                <div class="logo animated-store-name" id="store-name-display"><span class="store-text">F</span>YNTRA</div>
             </div>
             <div class="search-container">
                 <div class="search-box">
@@ -71,13 +61,17 @@
         </header>
 
         <div class="main-content">
-            <h3 class="section-title" style="padding:10px 15px;">تصفح الفئات</h3>
-            <div class="categories-scroll">
-                <div class="category-item" onclick="filterProducts('all')"><div class="cat-box active"><div class="square-icon"></div></div><span class="cat-name">الكل</span></div>
-                <div class="category-item" onclick="filterProducts('watch')"><div class="cat-box"><i class="fa-regular fa-clock"></i></div><span class="cat-name">ساعات</span></div>
-                <div class="category-item" onclick="filterProducts('shoes')"><div class="cat-box"><i class="fa-solid fa-shoe-prints"></i></div><span class="cat-name">أحذية</span></div>
-                <div class="category-item" onclick="filterProducts('perfume')"><div class="cat-box"><i class="fa-solid fa-bottle-droplet"></i></div><span class="cat-name">عطور</span></div>
+            <div class="slider-container">
+                <div class="slider-wrapper" id="dynamic-slider">
+                    </div>
+                <div class="promo-text">عروض مميزة</div>
             </div>
+
+            <h3 class="section-title" style="padding:10px 15px;">تصفح الفئات</h3>
+            <div class="categories-scroll" id="dynamic-categories">
+                <div class="category-item" onclick="filterProducts('all')"><div class="cat-box active"><div class="square-icon"></div></div><span class="cat-name">الكل</span></div>
+            </div>
+
             <div class="section-title" style="padding:10px 15px;"><span>أحدث المنتجات</span></div>
             <div class="products-grid" id="products-container">
                 <div style="text-align:center; width:200%; padding:20px; color:#777;">جاري تحميل المنتجات...</div>
@@ -95,16 +89,13 @@
         <div class="product-header">
             <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-right"></i></button>
             <span class="header-title">تفاصيل المنتج</span>
-            <button class="icon-btn"><i class="fa-solid fa-share-nodes"></i></button>
         </div>
         <div class="product-view-scroll">
-            <div class="large-image-container"><img id="detail-img" src="" alt="Product"></div>
+            <div class="large-image-container"><img id="detail-img" src=""></div>
             <div class="detail-content">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <h2 id="detail-title" style="font-size:18px;"></h2>
-                    <div class="detail-price" id="detail-price" style="color:#ff9900; font-weight:bold;"></div>
-                </div>
-                <div class="detail-desc"><p>وصف المنتج...</p></div>
+                <h2 id="detail-title"></h2>
+                <div class="detail-price" id="detail-price"></div>
+                <div class="detail-desc"><p></p></div>
             </div>
         </div>
         <div class="detail-footer">
@@ -118,9 +109,9 @@
             <span class="header-title">سلة المشتريات</span>
             <button class="icon-btn" onclick="clearCart()"><i class="fa-regular fa-trash-can"></i></button>
         </div>
-        <div class="cart-items-container" id="cart-items-list"><div class="empty-cart-msg">السلة فارغة</div></div>
+        <div class="cart-items-container" id="cart-items-list"></div>
         <div class="cart-footer">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold;"><span>المجموع:</span><span id="cart-total-price">0 د.ع</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>المجموع:</span><span id="cart-total-price">0 د.ع</span></div>
             <button class="checkout-btn" onclick="showPage('checkout-page')">إتمام الشراء</button>
         </div>
     </div>
@@ -131,9 +122,9 @@
             <span class="header-title">معلومات التوصيل</span>
         </div>
         <div style="padding:20px;">
-            <input type="text" placeholder="الاسم الكامل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
-            <input type="tel" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
-            <textarea placeholder="العنوان بالتفصيل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;"></textarea>
+            <input id="order-name" type="text" placeholder="الاسم الكامل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
+            <input id="order-phone" type="tel" placeholder="رقم الهاتف" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
+            <textarea id="order-address" placeholder="العنوان بالتفصيل" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;"></textarea>
             <button class="checkout-btn" onclick="processCheckout()">تأكيد الطلب</button>
         </div>
     </div>
@@ -142,7 +133,6 @@
         <div class="product-header">
             <button class="back-btn" onclick="showPage('home-page')"><i class="fa-solid fa-arrow-right"></i></button>
             <span class="header-title">الملف الشخصي</span>
-            <button class="icon-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
         <div class="profile-content">
             <div class="profile-card">
@@ -151,8 +141,6 @@
                 <p id="profile-email">لم يتم تسجيل الدخول</p>
             </div>
             <div class="profile-menu">
-                <div class="menu-item"><div class="icon-box" style="background:#e3f2fd; color:#2196f3"><i class="fa-solid fa-box"></i></div><span>طلباتي</span></div>
-                <div class="menu-item"><div class="icon-box" style="background:#e8f5e9; color:#4caf50"><i class="fa-solid fa-location-dot"></i></div><span>العناوين</span></div>
                 <div class="menu-item" onclick="openWhatsAppSupport()"><div class="icon-box" style="background:#e0f2f1; color:#25d366"><i class="fa-brands fa-whatsapp"></i></div><span>خدمة العملاء</span></div>
                 <div class="menu-item" onclick="showPage('login-page')"><div class="icon-box" style="background:#fff3e0; color:#ff9800"><i class="fa-solid fa-user-plus"></i></div><span>تسجيل الدخول</span></div>
             </div>
@@ -160,13 +148,10 @@
     </div>
 
     <div id="login-page" class="page">
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; padding:20px; text-align:center;">
-            <h1 style="color:#ff9900; font-size:40px;">Fyntra</h1>
-            <p>سجل دخولك للمتابعة</p>
-            <button onclick="handleGoogleLogin()" style="background:white; border:1px solid #ddd; padding:10px 20px; border-radius:25px; margin-top:30px; display:flex; gap:10px; align-items:center;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> تسجيل الدخول عبر Google
-            </button>
-            <button onclick="showPage('home-page')" style="background:none; border:none; margin-top:20px; color:#999; text-decoration:underline;">تخطي الآن</button>
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;">
+            <h1 style="color:#ff9900;">Fyntra</h1>
+            <button onclick="handleGoogleLogin()" style="margin-top:20px; padding:10px 20px;">تسجيل الدخول</button>
+            <button onclick="showPage('home-page')" style="background:none; border:none; margin-top:10px; color:#999;">تخطي</button>
         </div>
     </div>
 
@@ -175,3 +160,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
