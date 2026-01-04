@@ -1,9 +1,9 @@
-
 // متغيرات عامة
 let cart = [];
 let user = null;
 let deferredPrompt;
 let adminPhoneNumber = ""; // سيتم جلبه من الداتا بيز
+let sliderInterval; // متغير لحفظ توقيت السلايدر
 
 const firebaseConfig = {
     apiKey: "AIzaSyDX0esBRiQ4MuyvWH_s2UZ2kJpA9GryDgE",
@@ -20,23 +20,36 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. جلب إعدادات المتجر (الاسم + واتساب)
+    
+    // 1. جلب إعدادات المتجر (الاسم + واتساب) وتحديثها فوراً
     db.ref('settings').on('value', snapshot => {
         const s = snapshot.val();
         if(s) {
+            // تحديث اسم المتجر
             if(s.storeName) {
-                document.getElementById('store-name-display').innerHTML = `<span style="color:#fff">${s.storeName.charAt(0)}</span>${s.storeName.substring(1)}`;
-                document.getElementById('splash-title').innerText = s.storeName;
+                // تنسيق الاسم (أول حرف أبيض والباقي أسود)
+                const formattedName = `<span class="store-text" style="color:#fff">${s.storeName.charAt(0)}</span>${s.storeName.substring(1)}`;
+                
+                // تحديث الاسم في الهيدر
+                const headerDisplay = document.getElementById('store-name-display');
+                if(headerDisplay) headerDisplay.innerHTML = formattedName;
+
+                // تحديث الاسم في شاشة التحميل
+                const splashTitle = document.getElementById('splash-title');
+                if(splashTitle) splashTitle.innerText = s.storeName;
             }
-            if(s.whatsapp) adminPhoneNumber = s.whatsapp;
+            
+            // تحديث رقم الواتساب في المتغير العام
+            if(s.whatsapp) {
+                adminPhoneNumber = s.whatsapp;
+            }
         }
     });
 
-    // 2. جلب الفئات (Categories) ديناميكياً
+    // 2. جلب الفئات
     db.ref('categories').on('value', snapshot => {
         const catContainer = document.getElementById('dynamic-categories');
         const data = snapshot.val();
-        // إعادة تعيين القائمة مع زر "الكل" الثابت
         catContainer.innerHTML = `<div class="category-item" onclick="filterProducts('all')"><div class="cat-box active"><div class="square-icon"></div></div><span class="cat-name">الكل</span></div>`;
         
         if(data) {
@@ -50,28 +63,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. جلب البنرات (Slider) وعمل حركة السلايدر
+    // 3. جلب البنرات وعمل حركة تلقائية (Silder)
     db.ref('banners').on('value', snapshot => {
         const slider = document.getElementById('dynamic-slider');
         const data = snapshot.val();
-        slider.innerHTML = "";
         
+        // تنظيف السلايدر القديم وإيقاف الحركة السابقة
+        slider.innerHTML = "";
+        if(sliderInterval) clearInterval(sliderInterval);
+
         if(data) {
             const banners = Object.values(data);
-            // تكرار الصور لضمان حركة السلايدر المستمرة
-            const loopBanners = [...banners, ...banners, ...banners]; 
-            loopBanners.forEach(b => {
+            
+            // إضافة الصور
+            banners.forEach(b => {
                 slider.innerHTML += `<img src="${b.image}" alt="${b.title || 'Offer'}">`;
             });
-            // تعديل عرض السلايدر بناء على عدد الصور
-            slider.style.width = `${loopBanners.length * 100}%`;
-            slider.querySelectorAll('img').forEach(img => {
-                img.style.width = `${100 / loopBanners.length}%`;
-            });
+
+            // كود الحركة التلقائية
+            let currentIndex = 0;
+            const totalSlides = banners.length;
+
+            if(totalSlides > 1) {
+                sliderInterval = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % totalSlides;
+                    slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                }, 3000); // يتحرك كل 3 ثواني
+            }
+
         } else {
-            // صورة افتراضية
-            slider.innerHTML = '<img src="https://via.placeholder.com/800x450?text=Welcome" style="width:100%">';
-            slider.style.width = "100%";
+            slider.innerHTML = '<img src="https://via.placeholder.com/800x450?text=Welcome" style="width:100%; height:100%; object-fit:cover">';
         }
     });
 
@@ -174,7 +195,6 @@ window.processCheckout = function() {
     
     if(!name || !phone || !address) return showToast("يرجى ملء جميع البيانات");
     
-    // حساب المجموع
     let total = 0; cart.forEach(c => total += c.price);
 
     const orderData = {
@@ -226,3 +246,4 @@ window.filterProducts = function(cat) {
         else card.style.display = 'none';
     });
 }
+
