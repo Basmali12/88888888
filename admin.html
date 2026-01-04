@@ -2,60 +2,158 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - إضافة منتجات</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة تحكم المتجر</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Cairo', sans-serif; background: #f4f4f4; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        input, textarea, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: #f8f9fa; padding: 0; margin: 0; padding-bottom: 80px; }
         
-        /* ميزة الكتابة التلقائية: المربع يكبر والكلام ينزل سطر جديد */
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-            white-space: pre-wrap; 
-            overflow-wrap: break-word;
+        /* الهيدر العلوي */
+        .admin-header {
+            background: #ff9900; color: white; padding: 15px; text-align: center;
+            font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        button { background: #ff9900; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #e68a00; }
-        .status { text-align: center; margin-top: 10px; font-weight: bold; }
-        .loading { display: none; color: #555; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+
+        /* تنسيق الحقول والأزرار */
+        input, textarea, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; font-family: 'Cairo', sans-serif; box-sizing: border-box; outline: none; }
+        textarea { resize: vertical; min-height: 100px; }
+        
+        button.action-btn { background: #ff9900; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 153, 0, 0.2); }
+        button.action-btn:active { transform: scale(0.98); }
+        
+        button.delete-btn { background: #ff4757; color: white; width: auto; padding: 5px 15px; font-size: 12px; border-radius: 20px; float: left; }
+        
+        .status { text-align: center; margin-top: 5px; font-size: 14px; font-weight: bold; }
+        
+        /* تنسيق الطلبات */
+        .order-item { background: white; border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .order-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; color: #2f3542; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .order-details { font-size: 14px; color: #57606f; line-height: 1.7; }
+
+        /* --- نظام التبويبات (Tabs) --- */
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* الشريط السفلي (Navigation Bar) */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: white; border-top: 1px solid #eee; display: flex;
+            justify-content: space-around; align-items: center; z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            background: none; border: none; color: #a4b0be; font-size: 11px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 0; width: auto;
+        }
+        .nav-btn i { font-size: 22px; margin-bottom: 2px; transition: 0.3s; }
+        .nav-btn.active { color: #ff9900; }
+        .nav-btn.active i { transform: translateY(-3px); }
+
+        .section-label {
+            font-size: 16px; font-weight: bold; color: #2f3542; margin-bottom: 15px; display: block;
+            border-right: 4px solid #ff9900; padding-right: 10px; background: #fff; padding: 10px; border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
+    <div class="admin-header">لوحة الإدارة</div>
+
     <div class="container">
-        <h2>إضافة منتج جديد</h2>
         
-        <input type="text" id="p-name" placeholder="اسم المنتج">
-        <input type="number" id="p-price" placeholder="السعر (أرقام فقط)">
-        
-        <textarea id="p-desc" placeholder="اكتب وصف المنتج هنا... إذا كان النص طويلاً سينزل للسطر التالي تلقائياً"></textarea>
-        
-        <select id="p-cat">
-            <option value="watch">ساعات</option>
-            <option value="shoes">أحذية</option>
-            <option value="perfume">عطور</option>
-            <option value="clothes">ملابس</option>
-            <option value="other">أخرى</option>
-        </select>
+        <div id="tab-orders" class="tab-content active">
+            <span class="section-label">📦 الطلبات الواردة</span>
+            <div id="orders-list">
+                <p style="text-align:center; color:#777; margin-top:50px;">جاري تحميل الطلبات...</p>
+            </div>
+        </div>
 
-        <label>صورة المنتج:</label>
-        <input type="file" id="p-img">
+        <div id="tab-add-product" class="tab-content">
+            <span class="section-label">🛍️ إضافة منتج جديد</span>
+            <div style="background:white; padding:20px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <input type="text" id="p-name" placeholder="اسم المنتج">
+                <input type="number" id="p-price" placeholder="السعر (دينار)">
+                <textarea id="p-desc" placeholder="وصف المنتج وتفاصيله..."></textarea>
+                
+                <label style="font-size:13px; font-weight:bold;">القسم:</label>
+                <select id="p-cat-select">
+                    <option value="general">عام</option>
+                </select>
 
-        <button onclick="uploadAndSave()">حفظ ونشر المنتج</button>
-        <div class="loading" id="loading-msg">جاري رفع الصورة... يرجى الانتظار ⏳</div>
-        <div class="status" id="status-msg"></div>
+                <label style="font-size:13px; font-weight:bold;">الصورة:</label>
+                <input type="file" id="p-img">
+
+                <button class="action-btn" onclick="uploadProduct()">نشر المنتج الآن</button>
+                <div id="prod-status" class="status"></div>
+            </div>
+        </div>
+
+        <div id="tab-design" class="tab-content">
+            
+            <div style="background:white; padding:15px; border-radius:15px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <span class="section-label" style="border:none; padding:0; margin-bottom:10px;">🖼️ صور العروض (البنرات)</span>
+                <input type="text" id="banner-title" placeholder="عنوان العرض (اختياري)">
+                <input type="file" id="banner-img">
+                <button class="action-btn" onclick="uploadBanner()">رفع البنر</button>
+                <div id="banner-status" class="status"></div>
+            </div>
+
+            <div style="background:white; padding:15px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <span class="section-label" style="border:none; padding:0; margin-bottom:10px;">📂 إنشاء تصنيف جديد</span>
+                <input type="text" id="cat-name-new" placeholder="اسم التصنيف (مثال: ساعات)">
+                <input type="file" id="cat-img-new">
+                <button class="action-btn" onclick="uploadCategory()">إنشاء التصنيف</button>
+                <div id="cat-status" class="status"></div>
+            </div>
+        </div>
+
+        <div id="tab-settings" class="tab-content">
+            <span class="section-label">⚙️ إعدادات المتجر</span>
+            <div style="background:white; padding:20px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                <label>اسم المتجر:</label>
+                <input type="text" id="store-name-input" placeholder="اسم المتجر">
+                
+                <label>رقم خدمة العملاء (واتساب):</label>
+                <input type="number" id="whatsapp-input" placeholder="964xxxxxxxxx">
+                
+                <button class="action-btn" onclick="saveSettings()">حفظ التغييرات</button>
+                <div id="settings-status" class="status"></div>
+            </div>
+        </div>
+
     </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('tab-orders', this)">
+            <i class="fa-solid fa-box-open"></i>
+            <span>الطلبات</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('tab-add-product', this)">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>إضافة منتج</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('tab-design', this)">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>الواجهة</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('tab-settings', this)">
+            <i class="fa-solid fa-gear"></i>
+            <span>الإعدادات</span>
+        </button>
+    </nav>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script>
-        // 1. إعدادات Firebase الخاصة بك (تم نسخها من رسالتك)
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDX0esBRiQ4MuyvWH_s2UZ2kJpA9GryDgE",
             authDomain: "tttttt-48c2e.firebaseapp.com",
@@ -69,73 +167,173 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        // 2. إعدادات Cloudinary (تم وضع بياناتك الصحيحة)
         const cloudName = "dongmlmoj"; 
-        const uploadPreset = "app_upload"; // الاسم الذي اخترته في الصورة
+        const uploadPreset = "app_upload"; 
 
-        async function uploadAndSave() {
+        // === دالة التبديل بين التبويبات ===
+        function switchTab(tabId, btnElement) {
+            // إخفاء جميع الأقسام
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // إزالة التفعيل من جميع الأزرار
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // تفعيل القسم والزر المختار
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            // التمرير للأعلى
+            window.scrollTo(0,0);
+        }
+
+        // === 1. جلب الطلبات ===
+        db.ref('orders').on('value', (snapshot) => {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = "";
+            const data = snapshot.val();
+            if(!data) { list.innerHTML = "<p style='text-align:center; padding:20px;'>لا توجد طلبات جديدة</p>"; return; }
+            
+            Object.keys(data).reverse().forEach(key => {
+                const o = data[key];
+                const date = new Date(o.timestamp).toLocaleString('ar-EG');
+                let itemsHtml = "";
+                if(o.items) { o.items.forEach(i => itemsHtml += `<li>${i.title}</li>`); }
+                
+                list.innerHTML += `
+                <div class="order-item">
+                    <div class="order-header">
+                        <span>👤 ${o.customerName}</span>
+                        <span style="font-size:12px; color:#999;">${date}</span>
+                    </div>
+                    <div class="order-details">
+                        <p>📞 <a href="tel:${o.phone}" style="color:#ff9900; text-decoration:none;">${o.phone}</a></p>
+                        <p>📍 ${o.address}</p>
+                        <p style="margin-top:5px; font-weight:bold;">🛒 المنتجات:</p>
+                        <ul style="margin:5px 20px 10px;">${itemsHtml}</ul>
+                        <p style="font-weight:bold; color:#27ae60; font-size:16px;">💰 المجموع: ${o.total}</p>
+                    </div>
+                    <div style="overflow:hidden; margin-top:10px;">
+                        <button class="delete-btn" onclick="deleteOrder('${key}')"><i class="fa-solid fa-trash"></i> حذف الطلب</button>
+                    </div>
+                </div>`;
+            });
+        });
+
+        function deleteOrder(key) {
+            if(confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
+                db.ref('orders').child(key).remove();
+            }
+        }
+
+        // === 2. المنتجات ===
+        async function uploadProduct() {
             const name = document.getElementById('p-name').value;
             const price = document.getElementById('p-price').value;
             const desc = document.getElementById('p-desc').value;
-            const cat = document.getElementById('p-cat').value;
+            const cat = document.getElementById('p-cat-select').value;
             const fileInput = document.getElementById('p-img');
-            const status = document.getElementById('status-msg');
-            const loading = document.getElementById('loading-msg');
 
-            if(!name || !price || fileInput.files.length === 0) {
-                status.innerText = "❌ يرجى ملء جميع الحقول واختيار صورة!";
-                status.style.color = "red";
-                return;
-            }
+            if(!name || !price || fileInput.files.length === 0) return alert("الرجاء إدخال البيانات والصورة");
 
-            loading.style.display = "block";
-            status.innerText = "";
-
-            // رفع الصورة
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', uploadPreset); 
-
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if(data.error) throw new Error(data.error.message);
-                
-                const imageUrl = data.secure_url;
-
-                // الحفظ في قاعدة البيانات
+            document.getElementById('prod-status').innerText = "جاري الرفع...";
+            const imgUrl = await uploadToCloudinary(fileInput.files[0]);
+            
+            if(imgUrl) {
                 await db.ref('products').push({
-                    title: name,
-                    price: Number(price),
-                    description: desc,
-                    category: cat,
-                    image: imageUrl,
-                    date: firebase.database.ServerValue.TIMESTAMP
+                    title: name, price: Number(price), description: desc, category: cat,
+                    image: imgUrl, date: firebase.database.ServerValue.TIMESTAMP
                 });
-
-                status.innerText = "✅ تم نشر المنتج بنجاح!";
-                status.style.color = "green";
-                
+                document.getElementById('prod-status').innerText = "✅ تم النشر بنجاح";
+                document.getElementById('prod-status').style.color = "green";
                 // تفريغ الحقول
                 document.getElementById('p-name').value = "";
                 document.getElementById('p-price').value = "";
                 document.getElementById('p-desc').value = "";
                 document.getElementById('p-img').value = "";
+            }
+        }
 
-            } catch (err) {
-                console.error(err);
-                status.innerText = "خطأ: " + err.message;
-                status.style.color = "red";
-            } finally {
-                loading.style.display = "none";
+        // === 3. البنرات ===
+        async function uploadBanner() {
+            const title = document.getElementById('banner-title').value;
+            const fileInput = document.getElementById('banner-img');
+            if(fileInput.files.length === 0) return alert("اختر صورة");
+
+            document.getElementById('banner-status').innerText = "جاري الرفع...";
+            const imgUrl = await uploadToCloudinary(fileInput.files[0]);
+            if(imgUrl) {
+                db.ref('banners').push({ title: title, image: imgUrl });
+                document.getElementById('banner-status').innerText = "✅ تم رفع البنر";
+                document.getElementById('banner-status').style.color = "green";
+                fileInput.value = ""; document.getElementById('banner-title').value = "";
+            }
+        }
+
+        // === 4. التصنيفات ===
+        async function uploadCategory() {
+            const name = document.getElementById('cat-name-new').value;
+            const fileInput = document.getElementById('cat-img-new');
+            if(!name || fileInput.files.length === 0) return alert("الاسم والصورة مطلوبان");
+
+            document.getElementById('cat-status').innerText = "جاري الرفع...";
+            const imgUrl = await uploadToCloudinary(fileInput.files[0]);
+            if(imgUrl) {
+                const catId = name.replace(/\s+/g, '_'); 
+                db.ref('categories').push({ name: name, image: imgUrl, id: catId });
+                document.getElementById('cat-status').innerText = "✅ تم إنشاء التصنيف";
+                document.getElementById('cat-status').style.color = "green";
+                fileInput.value = ""; document.getElementById('cat-name-new').value = "";
+            }
+        }
+
+        // جلب الفئات للقائمة
+        db.ref('categories').on('value', snapshot => {
+            const select = document.getElementById('p-cat-select');
+            select.innerHTML = '<option value="general">عام</option>'; 
+            const data = snapshot.val();
+            if(data) {
+                Object.values(data).forEach(cat => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+            }
+        });
+
+        // === 5. الإعدادات ===
+        function saveSettings() {
+            const name = document.getElementById('store-name-input').value;
+            const phone = document.getElementById('whatsapp-input').value;
+            if(!name || !phone) return alert("أكمل البيانات");
+            
+            db.ref('settings').set({ storeName: name, whatsapp: phone })
+            .then(() => {
+                document.getElementById('settings-status').innerText = "✅ تم الحفظ";
+                document.getElementById('settings-status').style.color = "green";
+            });
+        }
+        
+        // عرض الإعدادات الحالية
+        db.ref('settings').once('value', snapshot => {
+            const s = snapshot.val();
+            if(s) {
+                document.getElementById('store-name-input').value = s.storeName || "";
+                document.getElementById('whatsapp-input').value = s.whatsapp || "";
+            }
+        });
+
+        // وظيفة الرفع لـ Cloudinary
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+                return data.secure_url;
+            } catch(e) {
+                alert("فشل الرفع");
+                return null;
             }
         }
     </script>
 </body>
 </html>
+
