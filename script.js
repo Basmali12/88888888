@@ -2,7 +2,7 @@
 let cart = [];
 let user = null;
 let deferredPrompt;
-let adminPhoneNumber = ""; // سيتم جلبه من الداتا بيز
+let adminPhoneNumber = ""; 
 let sliderInterval; // متغير لحفظ توقيت السلايدر
 
 const firebaseConfig = {
@@ -27,19 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if(s) {
             // تحديث اسم المتجر
             if(s.storeName) {
-                // تنسيق الاسم (أول حرف أبيض والباقي أسود)
                 const formattedName = `<span class="store-text" style="color:#fff">${s.storeName.charAt(0)}</span>${s.storeName.substring(1)}`;
-                
-                // تحديث الاسم في الهيدر
                 const headerDisplay = document.getElementById('store-name-display');
                 if(headerDisplay) headerDisplay.innerHTML = formattedName;
-
-                // تحديث الاسم في شاشة التحميل
                 const splashTitle = document.getElementById('splash-title');
                 if(splashTitle) splashTitle.innerText = s.storeName;
             }
-            
-            // تحديث رقم الواتساب في المتغير العام
+            // تحديث رقم الواتساب
             if(s.whatsapp) {
                 adminPhoneNumber = s.whatsapp;
             }
@@ -68,14 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const slider = document.getElementById('dynamic-slider');
         const data = snapshot.val();
         
-        // تنظيف السلايدر القديم وإيقاف الحركة السابقة
         slider.innerHTML = "";
         if(sliderInterval) clearInterval(sliderInterval);
 
         if(data) {
             const banners = Object.values(data);
-            
-            // إضافة الصور
             banners.forEach(b => {
                 slider.innerHTML += `<img src="${b.image}" alt="${b.title || 'Offer'}">`;
             });
@@ -90,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     slider.style.transform = `translateX(-${currentIndex * 100}%)`;
                 }, 3000); // يتحرك كل 3 ثواني
             }
-
         } else {
             slider.innerHTML = '<img src="https://via.placeholder.com/800x450?text=Welcome" style="width:100%; height:100%; object-fit:cover">';
         }
@@ -186,7 +176,7 @@ function updateCartUI() {
 window.removeFromCart = function(index) { cart.splice(index, 1); updateCartUI(); }
 window.clearCart = function() { cart = []; updateCartUI(); }
 
-// === إرسال الطلب للأدمن ===
+// إرسال الطلب
 window.processCheckout = function() {
     if(cart.length === 0) return showToast("السلة فارغة!");
     const name = document.getElementById('order-name').value;
@@ -196,21 +186,16 @@ window.processCheckout = function() {
     if(!name || !phone || !address) return showToast("يرجى ملء جميع البيانات");
     
     let total = 0; cart.forEach(c => total += c.price);
-
-    const orderData = {
-        customerName: name, phone: phone, address: address,
-        items: cart, total: total.toLocaleString() + " د.ع",
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    };
+    const orderData = { customerName: name, phone: phone, address: address, items: cart, total: total.toLocaleString() + " د.ع", timestamp: firebase.database.ServerValue.TIMESTAMP };
 
     db.ref('orders').push(orderData).then(() => {
-        showToast("تم إرسال طلبك بنجاح! سنتصل بك قريباً");
+        showToast("تم إرسال طلبك بنجاح!");
         clearCart();
         setTimeout(() => showPage('home-page'), 2000);
     });
 }
 
-// الوظائف الأخرى
+// جوجل والبروفايل
 window.handleGoogleLogin = function() {
     showToast("جاري الاتصال...");
     setTimeout(() => { user = { name: "مستخدم", email: "user@gmail.com", avatar: "https://via.placeholder.com/80" }; updateProfileUI(); showPage('home-page'); }, 1500);
@@ -231,6 +216,7 @@ function showToast(msg) {
     toast.innerText = msg; toast.classList.add('show-toast');
     setTimeout(() => toast.classList.remove('show-toast'), 2000);
 }
+// القوائم
 window.toggleSidebar = function() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('sidebar-overlay').classList.toggle('active'); }
 document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
 document.getElementById('close-sidebar').addEventListener('click', toggleSidebar);
