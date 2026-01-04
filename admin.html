@@ -9,7 +9,14 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background: #f8f9fa; padding: 0; margin: 0; padding-bottom: 80px; }
         
-        /* الهيدر العلوي */
+        /* شاشة القفل */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #2f3542; z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
+        }
+        #login-input { width: 200px; text-align: center; font-size: 20px; letter-spacing: 5px; }
+
         .admin-header {
             background: #ff9900; color: white; padding: 15px; text-align: center;
             font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -18,29 +25,24 @@
 
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
 
-        /* تنسيق الحقول والأزرار */
         input, textarea, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; font-family: 'Cairo', sans-serif; box-sizing: border-box; outline: none; }
         textarea { resize: vertical; min-height: 100px; }
         
         button.action-btn { background: #ff9900; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255, 153, 0, 0.2); }
         button.action-btn:active { transform: scale(0.98); }
         
-        button.delete-btn { background: #ff4757; color: white; width: auto; padding: 5px 15px; font-size: 12px; border-radius: 20px; float: left; }
+        button.delete-btn { background: #ff4757; color: white; width: auto; padding: 5px 15px; font-size: 12px; border-radius: 20px; }
         
         .status { text-align: center; margin-top: 5px; font-size: 14px; font-weight: bold; }
         
-        /* تنسيق الطلبات */
         .order-item { background: white; border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .order-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; color: #2f3542; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .order-details { font-size: 14px; color: #57606f; line-height: 1.7; }
 
-        /* --- نظام التبويبات (Tabs) --- */
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* الشريط السفلي (Navigation Bar) */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
             background: white; border-top: 1px solid #eee; display: flex;
@@ -60,13 +62,38 @@
             font-size: 16px; font-weight: bold; color: #2f3542; margin-bottom: 15px; display: block;
             border-right: 4px solid #ff9900; padding-right: 10px; background: #fff; padding: 10px; border-radius: 5px;
         }
+
+        /* تنسيق قائمة البنرات */
+        .banner-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #eee;
+        }
+        .banner-preview { width: 80px; height: 45px; object-fit: cover; border-radius: 4px; }
+        
+        /* أزرار خيارات الواجهة */
+        .design-option-btn {
+            background: white; border: 1px solid #eee; padding: 20px; text-align: center;
+            border-radius: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: block; width: 100%;
+        }
+        .design-option-btn:hover { background: #fffbf5; border-color: #ff9900; }
+        .design-option-btn i { font-size: 30px; color: #ff9900; margin-bottom: 10px; display: block; }
+        .design-option-btn span { font-weight: bold; font-size: 16px; color: #333; }
     </style>
 </head>
 <body>
 
+    <div id="login-screen">
+        <i class="fa-solid fa-lock" style="font-size: 50px; margin-bottom: 20px; color: #ff9900;"></i>
+        <h3>أدخل رمز الدخول</h3>
+        <input type="password" id="login-input" placeholder="****">
+        <button class="action-btn" onclick="checkLogin()" style="width: 200px; margin-top: 20px;">دخول</button>
+        <p id="login-error" style="color: #ff4757; display: none;">الرمز غير صحيح!</p>
+    </div>
+
     <div class="admin-header">لوحة الإدارة</div>
 
-    <div class="container">
+    <div class="container" id="main-container" style="display: none;">
         
         <div id="tab-orders" class="tab-content active">
             <span class="section-label">📦 الطلبات الواردة</span>
@@ -97,28 +124,51 @@
 
         <div id="tab-design" class="tab-content">
             
-            <div style="background:white; padding:15px; border-radius:15px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <span class="section-label" style="border:none; padding:0; margin-bottom:10px;">🖼️ صور العروض (البنرات)</span>
-                <input type="text" id="banner-title" placeholder="عنوان العرض (اختياري)">
-                <input type="file" id="banner-img">
-                <button class="action-btn" onclick="uploadBanner()">رفع البنر</button>
-                <div id="banner-status" class="status"></div>
+            <div id="design-menu">
+                <button class="design-option-btn" onclick="showDesignSection('banner-section')">
+                    <i class="fa-regular fa-images"></i>
+                    <span>إدارة البنرات (صور العروض)</span>
+                </button>
+                <button class="design-option-btn" onclick="showDesignSection('category-section')">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>إضافة تصنيف جديد</span>
+                </button>
             </div>
 
-            <div style="background:white; padding:15px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-                <span class="section-label" style="border:none; padding:0; margin-bottom:10px;">📂 إنشاء تصنيف جديد</span>
-                <input type="text" id="cat-name-new" placeholder="اسم التصنيف (مثال: ساعات)">
-                <input type="file" id="cat-img-new">
-                <button class="action-btn" onclick="uploadCategory()">إنشاء التصنيف</button>
-                <div id="cat-status" class="status"></div>
+            <div id="banner-section" style="display: none;">
+                <button onclick="showDesignSection('menu')" style="background:none; border:none; color:#555; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
+                <span class="section-label">🖼️ إدارة البنرات</span>
+                
+                <div id="banners-list-container" style="margin-bottom: 20px;">
+                    </div>
+
+                <div style="background:white; padding:15px; border-radius:15px; border:1px solid #ff9900;">
+                    <h4 style="margin-top:0;">إضافة بنر جديد</h4>
+                    <input type="text" id="banner-title" placeholder="عنوان العرض (اختياري)">
+                    <input type="file" id="banner-img">
+                    <button class="action-btn" onclick="uploadBanner()">رفع البنر</button>
+                    <div id="banner-status" class="status"></div>
+                </div>
             </div>
+
+            <div id="category-section" style="display: none;">
+                <button onclick="showDesignSection('menu')" style="background:none; border:none; color:#555; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
+                <span class="section-label">📂 إنشاء تصنيف جديد</span>
+                <div style="background:white; padding:15px; border-radius:15px;">
+                    <input type="text" id="cat-name-new" placeholder="اسم التصنيف (مثال: ساعات)">
+                    <input type="file" id="cat-img-new">
+                    <button class="action-btn" onclick="uploadCategory()">إنشاء التصنيف</button>
+                    <div id="cat-status" class="status"></div>
+                </div>
+            </div>
+
         </div>
 
         <div id="tab-settings" class="tab-content">
             <span class="section-label">⚙️ إعدادات المتجر</span>
             <div style="background:white; padding:20px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
                 <label>اسم المتجر:</label>
-                <input type="text" id="store-name-input" placeholder="اسم المتجر">
+                <input type="text" id="store-name-input" placeholder="اكتب اسم المتجر هنا">
                 
                 <label>رقم خدمة العملاء (واتساب):</label>
                 <input type="number" id="whatsapp-input" placeholder="964xxxxxxxxx">
@@ -140,7 +190,7 @@
             <span>إضافة منتج</span>
         </button>
         <button class="nav-btn" onclick="switchTab('tab-design', this)">
-            <i class="fa-solid fa-layer-group"></i>
+            <i class="fa-solid fa-paintbrush"></i>
             <span>الواجهة</span>
         </button>
         <button class="nav-btn" onclick="switchTab('tab-settings', this)">
@@ -170,19 +220,37 @@
         const cloudName = "dongmlmoj"; 
         const uploadPreset = "app_upload"; 
 
+        // === نظام تسجيل الدخول ===
+        function checkLogin() {
+            const code = document.getElementById('login-input').value;
+            if(code === "1001") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
         // === دالة التبديل بين التبويبات ===
         function switchTab(tabId, btnElement) {
-            // إخفاء جميع الأقسام
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            // إزالة التفعيل من جميع الأزرار
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            
-            // تفعيل القسم والزر المختار
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
-            
-            // التمرير للأعلى
             window.scrollTo(0,0);
+        }
+
+        // === التنقل داخل قسم الواجهة ===
+        function showDesignSection(sectionId) {
+            document.getElementById('design-menu').style.display = 'none';
+            document.getElementById('banner-section').style.display = 'none';
+            document.getElementById('category-section').style.display = 'none';
+
+            if(sectionId === 'menu') {
+                document.getElementById('design-menu').style.display = 'block';
+            } else {
+                document.getElementById(sectionId).style.display = 'block';
+            }
         }
 
         // === 1. جلب الطلبات ===
@@ -211,48 +279,39 @@
                         <ul style="margin:5px 20px 10px;">${itemsHtml}</ul>
                         <p style="font-weight:bold; color:#27ae60; font-size:16px;">💰 المجموع: ${o.total}</p>
                     </div>
-                    <div style="overflow:hidden; margin-top:10px;">
-                        <button class="delete-btn" onclick="deleteOrder('${key}')"><i class="fa-solid fa-trash"></i> حذف الطلب</button>
-                    </div>
+                    <button class="delete-btn" onclick="deleteOrder('${key}')"><i class="fa-solid fa-trash"></i> حذف</button>
+                    <div style="clear:both;"></div>
                 </div>`;
             });
         });
 
         function deleteOrder(key) {
-            if(confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
-                db.ref('orders').child(key).remove();
-            }
+            if(confirm("حذف الطلب؟")) db.ref('orders').child(key).remove();
         }
 
-        // === 2. المنتجات ===
-        async function uploadProduct() {
-            const name = document.getElementById('p-name').value;
-            const price = document.getElementById('p-price').value;
-            const desc = document.getElementById('p-desc').value;
-            const cat = document.getElementById('p-cat-select').value;
-            const fileInput = document.getElementById('p-img');
-
-            if(!name || !price || fileInput.files.length === 0) return alert("الرجاء إدخال البيانات والصورة");
-
-            document.getElementById('prod-status').innerText = "جاري الرفع...";
-            const imgUrl = await uploadToCloudinary(fileInput.files[0]);
+        // === 2. إدارة البنرات (إظهار وحذف) ===
+        db.ref('banners').on('value', snapshot => {
+            const list = document.getElementById('banners-list-container');
+            list.innerHTML = "";
+            const data = snapshot.val();
             
-            if(imgUrl) {
-                await db.ref('products').push({
-                    title: name, price: Number(price), description: desc, category: cat,
-                    image: imgUrl, date: firebase.database.ServerValue.TIMESTAMP
+            if(data) {
+                Object.keys(data).forEach(key => {
+                    const b = data[key];
+                    list.innerHTML += `
+                    <div class="banner-list-item">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${b.image}" class="banner-preview">
+                            <span style="font-size:12px;">${b.title || 'بدون عنوان'}</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteBanner('${key}')">X</button>
+                    </div>`;
                 });
-                document.getElementById('prod-status').innerText = "✅ تم النشر بنجاح";
-                document.getElementById('prod-status').style.color = "green";
-                // تفريغ الحقول
-                document.getElementById('p-name').value = "";
-                document.getElementById('p-price').value = "";
-                document.getElementById('p-desc').value = "";
-                document.getElementById('p-img').value = "";
+            } else {
+                list.innerHTML = "<p style='font-size:12px; color:#999; text-align:center;'>لا توجد بنرات حالياً</p>";
             }
-        }
+        });
 
-        // === 3. البنرات ===
         async function uploadBanner() {
             const title = document.getElementById('banner-title').value;
             const fileInput = document.getElementById('banner-img');
@@ -261,31 +320,55 @@
             document.getElementById('banner-status').innerText = "جاري الرفع...";
             const imgUrl = await uploadToCloudinary(fileInput.files[0]);
             if(imgUrl) {
+                // استخدام push لإضافة بنر جديد دون حذف القديم
                 db.ref('banners').push({ title: title, image: imgUrl });
-                document.getElementById('banner-status').innerText = "✅ تم رفع البنر";
+                document.getElementById('banner-status').innerText = "✅ تم";
                 document.getElementById('banner-status').style.color = "green";
                 fileInput.value = ""; document.getElementById('banner-title').value = "";
             }
         }
 
-        // === 4. التصنيفات ===
+        function deleteBanner(key) {
+            if(confirm("حذف هذا البنر؟")) db.ref('banners').child(key).remove();
+        }
+
+        // === 3. التصنيفات والمنتجات ===
         async function uploadCategory() {
             const name = document.getElementById('cat-name-new').value;
             const fileInput = document.getElementById('cat-img-new');
-            if(!name || fileInput.files.length === 0) return alert("الاسم والصورة مطلوبان");
+            if(!name || fileInput.files.length === 0) return alert("البيانات ناقصة");
 
-            document.getElementById('cat-status').innerText = "جاري الرفع...";
+            document.getElementById('cat-status').innerText = "جاري...";
             const imgUrl = await uploadToCloudinary(fileInput.files[0]);
             if(imgUrl) {
                 const catId = name.replace(/\s+/g, '_'); 
                 db.ref('categories').push({ name: name, image: imgUrl, id: catId });
-                document.getElementById('cat-status').innerText = "✅ تم إنشاء التصنيف";
-                document.getElementById('cat-status').style.color = "green";
+                document.getElementById('cat-status').innerText = "✅ تم";
                 fileInput.value = ""; document.getElementById('cat-name-new').value = "";
             }
         }
 
-        // جلب الفئات للقائمة
+        async function uploadProduct() {
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const desc = document.getElementById('p-desc').value;
+            const cat = document.getElementById('p-cat-select').value;
+            const fileInput = document.getElementById('p-img');
+            if(!name || !price || fileInput.files.length === 0) return alert("البيانات ناقصة");
+
+            document.getElementById('prod-status').innerText = "جاري الرفع...";
+            const imgUrl = await uploadToCloudinary(fileInput.files[0]);
+            if(imgUrl) {
+                await db.ref('products').push({
+                    title: name, price: Number(price), description: desc, category: cat,
+                    image: imgUrl, date: firebase.database.ServerValue.TIMESTAMP
+                });
+                document.getElementById('prod-status').innerText = "✅ تم النشر";
+                document.getElementById('p-name').value = ""; document.getElementById('p-price').value = "";
+                document.getElementById('p-desc').value = ""; document.getElementById('p-img').value = "";
+            }
+        }
+
         db.ref('categories').on('value', snapshot => {
             const select = document.getElementById('p-cat-select');
             select.innerHTML = '<option value="general">عام</option>'; 
@@ -297,29 +380,30 @@
             }
         });
 
-        // === 5. الإعدادات ===
+        // === 4. الإعدادات (إصلاح الحفظ والاسترجاع) ===
         function saveSettings() {
             const name = document.getElementById('store-name-input').value;
             const phone = document.getElementById('whatsapp-input').value;
             if(!name || !phone) return alert("أكمل البيانات");
             
-            db.ref('settings').set({ storeName: name, whatsapp: phone })
+            // استخدام update بدلاً من set لعدم حذف البيانات الأخرى
+            db.ref('settings').update({ storeName: name, whatsapp: phone })
             .then(() => {
                 document.getElementById('settings-status').innerText = "✅ تم الحفظ";
                 document.getElementById('settings-status').style.color = "green";
             });
         }
         
-        // عرض الإعدادات الحالية
-        db.ref('settings').once('value', snapshot => {
+        // استرجاع البيانات وعرضها عند فتح الصفحة
+        db.ref('settings').on('value', snapshot => {
             const s = snapshot.val();
             if(s) {
-                document.getElementById('store-name-input').value = s.storeName || "";
-                document.getElementById('whatsapp-input').value = s.whatsapp || "";
+                if(s.storeName) document.getElementById('store-name-input').value = s.storeName;
+                if(s.whatsapp) document.getElementById('whatsapp-input').value = s.whatsapp;
             }
         });
 
-        // وظيفة الرفع لـ Cloudinary
+        // وظيفة الرفع
         async function uploadToCloudinary(file) {
             const formData = new FormData();
             formData.append('file', file);
